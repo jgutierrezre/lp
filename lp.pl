@@ -1,15 +1,74 @@
-% Knowledge Base
-may(rain).
-may(not(elephants_fly)).
-always(sun_rise).
-always(birds_fly).
+g(
+    1,
+    [
+        ["a","b","c","d","e"],
+        [e("a","b"),e("a","c"),e("b","d"),e("c","d"),e("d","e")],
+        [v("a","p"),v("b","q"),v("c","q"),v("d","p"),v("e","q")]
+    ]
+).
 
-% Modal Logic Rules
-diamond(X) :- may(X).
-square(X) :- \+ may(not(X)).
+next(Node,NextNode) :-
+    g(_,G),
+    [_,E,_] = G,
+    member(e(Node,NextNode),E).
 
-% Additional rules to illustrate the usage
-might_not_rain_tomorrow :- diamond(not(rain)).
-sun_always_rises :- square(sun_rise).
-birds_always_fly :- square(birds_fly).
-elephants_might_not_fly :- diamond(not(elephants_fly)).
+value(Node,Value) :-
+    g(_,G),
+    [_,_,V] = G,
+    member(v(Node,Value),V).
+
+evaluate(Predicate,Value,Node) :-
+    (  callable(Predicate)
+    -> call(Predicate,Node)
+    ;  Predicate = Value).
+
+b(Predicate,Node) :-
+    forall(
+            (next(Node,NextNode),value(NextNode,Value)),
+            evaluate(Predicate,Value,NextNode)
+        ).
+
+d(Predicate,Node) :-
+    once(
+            (
+                (next(Node,NextNode),value(NextNode,Value)),
+                evaluate(Predicate,Value,NextNode)
+            )
+        ).
+
+% b(G,U,P) :-
+%     [N,E,V] = G,
+%     member(U,N),
+%     findall(
+%         Value,
+%         (
+%             member(e(U,Neighbor),E),
+%             member(v(Neighbor,Value),V)
+%         ),
+%         Values
+%     ),
+%     forall(
+%         member(Value,Values),
+%         Value = P
+%     ).
+
+% d(G,U,P) :-
+%     [N,E,V] = G,
+%     member(U,N),
+%     findall(
+%         Value,
+%         (
+%             member(e(U,Neighbor),E),
+%             member(v(Neighbor,Value),V)
+%         ),
+%         Values
+%     ),
+%     member(
+%         P,
+%         Values
+%     ).
+
+% valid(G,U,P) :-
+%     [N,E,V] = G,
+%     member(U,N),
+
